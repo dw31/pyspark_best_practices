@@ -1,6 +1,6 @@
 # PySpark Best Practices: Functional Programming in Databricks
 
-A comprehensive collection of educational Jupyter notebooks demonstrating functional programming principles for PySpark development in Databricks environments.
+A  collection of educational Jupyter notebooks demonstrating functional programming principles for PySpark development in Databricks environments.
 
 ## Overview
 
