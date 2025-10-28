@@ -1,43 +1,63 @@
-# PySpark Best Practices: Functional Programming in Databricks
+# PySpark Best Practices: Functional Programming for Apache Spark
 
-A  collection of educational Jupyter notebooks demonstrating functional programming principles for PySpark development in Databricks environments.
+A collection of educational Jupyter notebooks demonstrating functional programming principles for PySpark development. Works with both **Databricks** and **local Python environments** using Delta Lake or Apache Iceberg table formats.
 
 ## Overview
 
 This repository provides hands-on learning materials for data engineers and developers who want to master functional programming patterns in PySpark. Each notebook combines theoretical concepts with practical, runnable examples that demonstrate how to build maintainable, testable, and performant data pipelines.
 
+## Platform Support
+
+These notebooks support two deployment modes:
+
+### 🌐 Databricks Environment (Recommended)
+- **Databricks Runtime**: 12.2 LTS or later
+- Pre-configured PySpark and Delta Lake
+- Photon acceleration and optimized Spark configurations
+- Built-in `spark` session and `dbutils` utilities
+- Integrated data visualization and collaboration
+
+### 💻 Local Development Environment
+- **Python**: >= 3.8
+- **Java**: 11 or 17 (required for Spark)
+- **PySpark**: >= 3.4.0
+- **Table Formats**: Delta Lake (>= 3.0.0) or Apache Iceberg (>= 0.5.0)
+- All dependencies managed via `requirements.txt`
+
 ## Dependencies and Requirements
 
 ### Core Dependencies
-- **PySpark**: >= 3.3.0 (Spark's Python API)
-- **Delta Lake**: >= 2.0.0 (Lakehouse storage layer)
+- **PySpark**: >= 3.4.0 (Spark's Python API)
+- **Delta Lake**: >= 3.0.0 (ACID lakehouse storage)
+- **Apache Iceberg**: >= 0.5.0 (Alternative lakehouse format)
 - **Python**: >= 3.8
+- **PyArrow**: >= 12.0.0 (Arrow integration for performance)
 
-### Testing Dependencies
-- **pytest**: >= 6.0.0 (Testing framework)
-- **pytest-cov**: >= 2.10.0 (Coverage reporting)
-- **pytest-xdist**: >= 2.0.0 (Parallel test execution)
-- **pytest-mock**: >= 3.0.0 (Mocking utilities)
+### Testing Framework
+- **pytest**: >= 7.4.0 (Testing framework)
+- **pytest-cov**: >= 4.1.0 (Coverage reporting)
+- **pytest-xdist**: >= 3.3.0 (Parallel test execution)
+- **pytest-mock**: >= 3.11.0 (Mocking utilities)
+- **chispa**: >= 0.9.0 (PySpark DataFrame testing)
 
-### Development Dependencies
-- **pandas**: >= 1.3.0 (For Pandas UDF examples)
-- **pyarrow**: >= 5.0.0 (Arrow integration)
-- **pyyaml**: >= 6.0 (Configuration management)
-
-### Databricks Environment
-The notebooks are designed for **Databricks Runtime 12.2 LTS** or later, which includes:
-- Pre-configured PySpark and Delta Lake
-- Optimized Spark configurations
-- Photon acceleration (where applicable)
-- Built-in data visualization libraries
-
-### Local Development (Optional)
-For local testing and development:
-- **Java**: 11 or 17 (required for Spark)
-- **Databricks Connect**: For local-to-remote development
-- **Great Expectations**: >= 0.15.50 (Data quality validation)
+### Optional Tools
+- **Great Expectations**: >= 0.17.0 (Advanced data validation)
+- **JupyterLab**: >= 4.0.0 (Local notebook environment)
+- **Black/Ruff**: Code formatting and linting
 
 ## Repository Structure
+
+### Progress Tracker
+
+**Completed Notebooks**: 15 of 15 ✅ **COMPLETE**
+- ✅ Section 1: Spark Fundamentals (1/1)
+- ✅ Section 2: Functional Programming (3/3)
+- ✅ Section 3: Test-First Development (3/3)
+- ✅ Section 4: Data Quality (2/2)
+- ✅ Section 5: Performance Optimization (4/4)
+- ✅ Section 6: Project Structure and Collaboration (3/3)
+
+---
 
 ### Section 1: Spark Fundamentals
 **1.1_Understanding_Spark_Lazy_Evaluation_and_Immutability.ipynb**
@@ -62,11 +82,15 @@ For local testing and development:
 - Building reusable function libraries
 - **Key Learning**: Maximizing performance while maintaining functional purity
 
-**2.3_Effective_Chaining_and_Composition_of_Transformations.ipynb** *(Planned)*
-- Advanced chaining patterns and readability guidelines
-- Schema contracts with structured `select` statements
-- Breaking down complex transformations into manageable functions
-- **Key Learning**: Balancing functional composition with code maintainability
+**2.3_Effective_Chaining_and_Composition_of_Transformations.ipynb**
+- Advanced method chaining patterns for readable pipelines
+- Schema contracts with structured `select` statements as data contracts
+- Breaking down complex transformations into modular, named functions
+- Higher-order function composition and pipeline builder patterns
+- Chaining limit guidelines (max 5 operations, use `.transform()` for longer chains)
+- Managing complex business logic with clarity and maintainability
+- Performance considerations: all approaches have similar performance due to lazy evaluation
+- **Key Learning**: Balancing functional composition power with code readability and maintainability
 
 ### Section 3: Test-First Development
 **3.1_Unit_Testing_PySpark_Code_with_Pytest_in_Databricks.ipynb**
@@ -98,11 +122,15 @@ For local testing and development:
 - Building declarative data quality utilities
 - **Key Learning**: Declarative data quality at the storage layer
 
-**4.2_Declarative_Data_Quality_with_Delta_Live_Tables_DLT_Expectations.ipynb** *(In Progress)*
-- Delta Live Tables expectations framework
-- Pipeline-level data quality definitions
-- Automated data quality monitoring and alerting
-- **Key Learning**: Platform-native data quality automation
+**4.2_Declarative_Data_Quality_with_Delta_Live_Tables_DLT_Expectations.ipynb**
+- Delta Live Tables expectations framework (WARN, DROP, FAIL strategies)
+- Declarative vs imperative data quality patterns
+- Functional pipeline simulation with expectation evaluation
+- Quality metrics, monitoring, and automated reporting
+- Multi-layer quality strategy (Bronze → Silver → Gold)
+- Real DLT pipeline code examples for Databricks
+- Testing DLT expectations before deployment
+- **Key Learning**: Platform-native declarative data quality automation
 
 ### Section 5: Performance Optimization
 **5.1_Strategic_Data_Handling_Caching_Broadcast_Joins_and_Efficient_Formats.ipynb**
@@ -112,57 +140,144 @@ For local testing and development:
 - Memory management for functional pipelines
 - **Key Learning**: Performance optimization without sacrificing functional principles
 
-**5.2_Minimizing_Data_Shuffling_and_Addressing_Data_Skew.ipynb** *(Planned)*
-- Understanding shuffle operations and their performance impact
-- Data partitioning strategies for functional transformations
-- Skew detection and mitigation techniques
+**5.2_Logging_and_Error_Reporting_in_Functional_PySpark_Pipelines.ipynb**
+- Structured logging with PySpark's PySparkLogger (Spark 4+)
+- Standard Python logging module for older runtimes
+- JSON logging for scalable log analysis and monitoring
+- Centralized log storage with Unity Catalog volumes
+- Programmatic error handling with PySparkException
+- Error condition classification and debugging strategies
+- **Key Learning**: Production-grade observability for functional pipelines
+
+**5.3_Minimizing_Data_Shuffling_and_Addressing_Data_Skew.ipynb**
+- Understanding wide vs narrow transformations and shuffle behavior
+- Partitioning strategies: `repartition()` vs `coalesce()` optimization
+- Data skew detection through distribution analysis and Spark UI
+- Skew remediation: AQE, filtering, salting, and parallelism tuning
+- Join optimization strategies (broadcast, bucketed, partitioned)
+- Functional utilities for shuffle metrics and monitoring
+- Performance comparison of shuffle optimization techniques
 - **Key Learning**: Distributed system optimization for functional code
 
-**5.3_Advanced_Cluster_Configuration_and_Tuning.ipynb** *(Planned)*
-- Spark configuration optimization for functional workloads
-- Adaptive Query Execution (AQE) and Photon integration
-- Resource allocation and autoscaling strategies
+**5.4_Advanced_Cluster_Configuration_and_Tuning.ipynb**
+- Critical Spark configuration parameters and precedence hierarchy
+- Adaptive Query Execution (AQE) for automatic runtime optimization
+- Photon acceleration for 2-10x performance improvements
+- Cluster sizing strategies by workload type
+- Spark memory model and allocation tuning
+- Configuration management best practices and anti-patterns
+- Cost optimization through proper resource allocation
 - **Key Learning**: Platform-level optimizations that enhance functional programming
 
-### Section 6: Project Structure and Maintainability
-**6.1_Modular_Design_and_Abstraction_Layers_for_Functional_Code.ipynb** *(Planned)*
-- Organizing functional PySpark code for reusability
-- Abstraction layers and separation of concerns
-- Idempotent transformation design patterns
-- **Key Learning**: Scaling functional code across enterprise data platforms
+### Section 6: Project Structure, Collaboration, and Version Control
+**6.1_Modular_Design_and_Project_Structure.ipynb**
+- Organizing functional PySpark code into modular, reusable components
+- Abstraction layers: Extract-Transform-Load (ETL) pattern with pure transformations
+- Idempotent transformation design for fault tolerance and safe retries
+- Project structure best practices for production-grade PySpark applications
+- Configuration management with immutable dataclasses
+- Separation of concerns: data extraction, transformation, and loading layers
+- **Key Learning**: Scaling functional code through modular design and clean architecture
 
-**6.2_Managing_External_Python_Libraries_and_Dependencies.ipynb** *(Planned)*
-- Dependency management in Databricks environments
-- Library installation patterns and governance
-- Creating reusable functional modules
-- **Key Learning**: Operational aspects of functional PySpark development
+**6.2_Dependency_Management_and_Package_Distribution.ipynb**
+- Dependency management strategies in Databricks (cluster-scoped, notebook-scoped, Unity Catalog)
+- Building distributable Python wheel packages for PySpark libraries
+- Requirements file management and version pinning for reproducibility
+- Security and governance: vulnerability scanning, license compliance, access controls
+- Complete package deployment workflow from development to production
+- CI/CD automation for package building and deployment
+- **Key Learning**: Professional dependency management and package distribution for production PySpark
+
+**6.3_Git_Project_Management_and_GitHub_for_PySpark.ipynb**
+- Databricks Repos integration with GitHub, GitLab, and Bitbucket
+- Git branching strategies for data engineering teams (GitHub Flow, Git Flow, trunk-based)
+- Git workflow best practices: feature branches, commits, pull requests, rebasing
+- Code review checklists and best practices for PySpark code quality
+- CI/CD pipeline automation with GitHub Actions for testing and deployment
+- Managing Jupyter notebooks in Git (nbstripout, ReviewNB, Jupytext, modular approach)
+- Collaboration patterns: pair programming, async work, knowledge sharing, release management
+- .gitignore patterns and project structure for PySpark repositories
+- **Key Learning**: Professional version control and team collaboration for data engineering projects
 
 ## Getting Started
 
-### In Databricks
+> 📖 **Quick Start Guide**: See [SETUP_INSTRUCTIONS.md](SETUP_INSTRUCTIONS.md) for platform-specific setup
+
+### Option 1: Databricks Environment (Recommended)
+
+**No setup required!** Notebooks work out-of-the-box.
+
 1. **Import notebooks**: Upload the `notebooks/` folder to your Databricks workspace
 2. **Create a cluster**: Use Databricks Runtime 12.2 LTS or later
-3. **Install additional libraries** (if needed):
+3. **Run notebooks**: Start with Section 1, `spark` is pre-configured
+4. **Install additional libraries** (optional for testing sections):
    ```python
-   %pip install pytest great-expectations
+   %pip install pytest great-expectations chispa
    ```
-4. **Run notebooks sequentially**: Start with Section 1 and progress through the learning path
 
-### Local Development (Optional)
+**Important**: Keep the `# %run 00_Environment_Setup.ipynb` line commented out in Databricks.
+
+### Option 2: Local Development Environment
+
+#### Prerequisites
+- **Python 3.8+**: Verify with `python --version`
+- **Java 11 or 17**: Required for Spark (verify with `java -version`)
+  - macOS: `brew install openjdk@17`
+  - Ubuntu/Debian: `sudo apt install openjdk-17-jdk`
+  - Windows: Download from [Adoptium](https://adoptium.net/)
+
+#### Setup Steps
+
 1. **Clone the repository**:
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/dw31/pyspark_best_practices.git
    cd pyspark_best_practices
    ```
-2. **Set up environment**:
+
+2. **Create virtual environment** (recommended):
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
+
+3. **Install dependencies**:
    ```bash
    pip install -r requirements.txt
    ```
-3. **Configure Spark** (ensure Java 11+ is installed):
+
+4. **Set Java environment** (if not already configured):
    ```bash
-   export JAVA_HOME=/path/to/java
-   export SPARK_HOME=/path/to/spark
+   # macOS/Linux
+   export JAVA_HOME=$(/usr/libexec/java_home -v 17)  # macOS
+   # or
+   export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64  # Linux
+
+   # Windows (PowerShell)
+   $env:JAVA_HOME = "C:\Program Files\Java\jdk-17"
    ```
+
+5. **Launch Jupyter**:
+   ```bash
+   jupyter lab
+   # or
+   jupyter notebook
+   ```
+
+6. **Open notebooks** in the `notebooks/` directory
+
+7. **Enable local setup**: In each notebook's first code cell, **uncomment** this line:
+   ```python
+   %run 00_Environment_Setup.ipynb
+   ```
+
+#### Local Development Notes
+
+- **Setup Notebook**: `00_Environment_Setup.ipynb` initializes Spark and loads utilities for local development
+- **Platform Detection**: Uncomment `%run` line for local, keep commented for Databricks
+- **Table Formats**: Delta Lake disabled by default for compatibility; Spark DataFrames work normally
+- **Performance**: Local mode uses all available CPU cores (`local[*]`)
+- **Storage**: Data written to `./data/` directory (gitignored)
+- **Testing**: Run tests with `pytest tests/` from the project root
 
 ## Usage Patterns
 
@@ -201,14 +316,31 @@ This is an educational repository focused on demonstrating functional programmin
 - **Provide Context**: Explain why patterns are beneficial, not just how they work
 - **Test Thoroughly**: Include working examples with expected outputs
 
+## Table Formats: Delta Lake vs Apache Iceberg
+
+Both Delta Lake and Apache Iceberg are open-source lakehouse table formats that provide ACID transactions, schema evolution, and time travel capabilities. This repository includes examples for both:
+
+### Delta Lake (Primary Examples)
+- **Best for**: Databricks environments, streaming workloads, Unity Catalog integration
+- **Strengths**: Tight Databricks integration, Delta Live Tables, optimized for Photon
+- **Use cases**: Production data pipelines, real-time analytics, ML feature stores
+
+### Apache Iceberg (Alternative Examples)
+- **Best for**: Multi-engine compatibility (Spark, Trino, Flink), open ecosystem
+- **Strengths**: Engine-agnostic, strong community, flexible partition evolution
+- **Use cases**: Multi-cloud deployments, engine-agnostic architectures
+
+**Note**: Notebooks demonstrate concepts using Delta Lake by default, with Iceberg alternatives clearly marked in comments for easy substitution.
+
 ## Best Practices Philosophy
 
 This repository emphasizes:
 - **Evidence over Assumptions**: All recommendations backed by measurable benefits
-- **Code over Documentation**: Working examples over theoretical explanations  
+- **Code over Documentation**: Working examples over theoretical explanations
 - **Efficiency over Verbosity**: Practical patterns that improve development velocity
 - **Functional over Imperative**: Leveraging Spark's natural functional alignment
 - **Declarative over Imperative**: Using platform capabilities for quality and performance
+- **Platform Flexibility**: Code patterns that work across Databricks and local environments
 
 ## Support
 
