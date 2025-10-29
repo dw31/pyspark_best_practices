@@ -49,13 +49,17 @@ These notebooks support two deployment modes:
 
 ### Progress Tracker
 
-**Completed Notebooks**: 15 of 15 ✅ **COMPLETE**
+**Completed Notebooks**: 19 of 19 ✅ **COMPLETE**
 - ✅ Section 1: Spark Fundamentals (1/1)
 - ✅ Section 2: Functional Programming (3/3)
 - ✅ Section 3: Test-First Development (3/3)
 - ✅ Section 4: Data Quality (2/2)
 - ✅ Section 5: Performance Optimization (4/4)
-- ✅ Section 6: Project Structure and Collaboration (3/3)
+- ✅ Section 6: Declarative Pipelines (6/6)
+
+**Appendices**: 2 supplemental notebooks
+- Appendix 1.1: Modular Design and Project Structure
+- Appendix 1.2: Dependency Management and Package Distribution
 
 ---
 
@@ -169,8 +173,66 @@ These notebooks support two deployment modes:
 - Cost optimization through proper resource allocation
 - **Key Learning**: Platform-level optimizations that enhance functional programming
 
-### Section 6: Project Structure, Collaboration, and Version Control
-**6.1_Modular_Design_and_Project_Structure.ipynb**
+### Section 6: Declarative Pipelines with pyspark.pipelines
+**6.1_Introduction_to_pyspark_pipelines_and_Lakeflow_Architecture.ipynb**
+- Evolution from Delta Live Tables (`dlt`) to Lakeflow Declarative Pipelines (`pyspark.pipelines`)
+- Apache Spark 4.1+ open-source declarative pipelines vs Databricks Lakeflow extensions
+- Declarative vs imperative pipeline paradigms with functional alignment
+- Core concepts: tables, views, flows, and automatic dependency resolution
+- Lakeflow platform ecosystem: Connect (ingestion), Declarative Pipelines (transformation), Jobs (orchestration)
+- Migration guide from legacy `import dlt` to modern `from pyspark import pipelines as dp`
+- **Key Learning**: Building declarative, functional data pipelines with automatic orchestration
+
+**6.2_Defining_Tables_Views_and_Sinks.ipynb**
+- Defining batch tables with `@dp.table` and configuration options
+- Creating materialized views (`@dp.materialized_view`) for pre-computed aggregations
+- Using temporary views (`@dp.temporary_view`) for intermediate transformations
+- Table properties: partitioning, clustering, Delta Lake optimization settings
+- Custom sinks for external system integration (JDBC, cloud storage, APIs)
+- Dependency management and complex multi-layer architectures
+- Functional composition patterns for testable, reusable table definitions
+- **Key Learning**: Declarative table definitions with pure functions and optimal configuration
+
+**6.3_Streaming_Tables_and_Incremental_Processing.ipynb**
+- Real-time data processing with `@dp.streaming_table`
+- Streaming vs batch table patterns and use cases
+- Checkpointing and exactly-once processing guarantees
+- Incremental processing strategies and watermarking
+- Handling late-arriving data and out-of-order events
+- Stream-to-stream and stream-to-batch joins
+- Performance optimization for streaming workloads
+- **Key Learning**: Building robust real-time pipelines with declarative streaming tables
+
+**6.4_Data_Quality_with_Expectations_in_Lakeflow.ipynb**
+- Migrating from `@dlt.expect` to `@dp.expect` for data quality
+- Three expectation strategies: WARN (`@dp.expect`), DROP (`@dp.expect_or_drop`), FAIL (`@dp.expect_or_fail`)
+- Layered quality strategy: Bronze (monitor), Silver (cleanse), Gold (enforce)
+- Composable expectation patterns and reusable quality rules
+- Quality metrics collection and monitoring
+- Testing expectations before deployment
+- **Key Learning**: Declarative data quality with functional expectation patterns
+
+**6.5_Flows_and_Advanced_CDC_Patterns.ipynb**
+- Append flows with `dp.append_flow()` for incremental data loading
+- Automatic change data capture with `dp.create_auto_cdc_flow()`
+- CDC from snapshot tables with `dp.create_auto_cdc_from_snapshot_flow()`
+- Handling inserts, updates, and deletes declaratively
+- Type 1 and Type 2 slowly changing dimensions
+- Merge strategies and conflict resolution
+- **Key Learning**: Advanced data integration patterns with declarative CDC flows
+
+**6.6_Best_Practices_and_Anti_Patterns_for_Lakeflow.ipynb**
+- Prohibited operations in pipeline definitions (no `.collect()`, `.write()`, `.count()`)
+- Table vs view vs temporary view selection criteria
+- Performance anti-patterns and optimization strategies
+- Testing strategies for declarative pipelines
+- Migration checklist from imperative to declarative patterns
+- Troubleshooting common pipeline issues
+- **Key Learning**: Production-ready declarative pipelines following functional best practices
+
+### Appendix 1: Advanced Topics
+
+**Appendix_1.1_Modular_Design_and_Project_Structure.ipynb**
 - Organizing functional PySpark code into modular, reusable components
 - Abstraction layers: Extract-Transform-Load (ETL) pattern with pure transformations
 - Idempotent transformation design for fault tolerance and safe retries
@@ -179,7 +241,7 @@ These notebooks support two deployment modes:
 - Separation of concerns: data extraction, transformation, and loading layers
 - **Key Learning**: Scaling functional code through modular design and clean architecture
 
-**6.2_Dependency_Management_and_Package_Distribution.ipynb**
+**Appendix_1.2_Dependency_Management_and_Package_Distribution.ipynb**
 - Dependency management strategies in Databricks (cluster-scoped, notebook-scoped, Unity Catalog)
 - Building distributable Python wheel packages for PySpark libraries
 - Requirements file management and version pinning for reproducibility
@@ -187,17 +249,6 @@ These notebooks support two deployment modes:
 - Complete package deployment workflow from development to production
 - CI/CD automation for package building and deployment
 - **Key Learning**: Professional dependency management and package distribution for production PySpark
-
-**6.3_Git_Project_Management_and_GitHub_for_PySpark.ipynb**
-- Databricks Repos integration with GitHub, GitLab, and Bitbucket
-- Git branching strategies for data engineering teams (GitHub Flow, Git Flow, trunk-based)
-- Git workflow best practices: feature branches, commits, pull requests, rebasing
-- Code review checklists and best practices for PySpark code quality
-- CI/CD pipeline automation with GitHub Actions for testing and deployment
-- Managing Jupyter notebooks in Git (nbstripout, ReviewNB, Jupytext, modular approach)
-- Collaboration patterns: pair programming, async work, knowledge sharing, release management
-- .gitignore patterns and project structure for PySpark repositories
-- **Key Learning**: Professional version control and team collaboration for data engineering projects
 
 ## Getting Started
 
@@ -300,12 +351,11 @@ These notebooks support two deployment modes:
 
 After completing this material, you will be able to:
 
-1. **Apply Functional Principles**: Write pure, composable PySpark transformations
-2. **Test Effectively**: Implement comprehensive testing strategies for distributed code
-3. **Ensure Data Quality**: Build declarative validation systems with Delta Lake
-4. **Optimize Performance**: Balance functional purity with distributed system performance
-5. **Structure Projects**: Organize code for maintainability and collaboration
-6. **Deploy Professionally**: Integrate functional PySpark code with CI/CD workflows
+1. **Apply Functional Principles**: Write pure, composable PySpark transformations leveraging immutability and lazy evaluation
+2. **Test Effectively**: Implement comprehensive testing strategies for distributed code with pytest and data validation
+3. **Ensure Data Quality**: Build declarative validation systems with Delta Lake constraints and DLT expectations
+4. **Optimize Performance**: Balance functional purity with distributed system performance through caching, partitioning, and cluster tuning
+5. **Deploy Professionally**: Integrate functional PySpark code with CI/CD workflows and modern data engineering practices
 
 ## Contributing
 

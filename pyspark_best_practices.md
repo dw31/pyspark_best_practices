@@ -154,11 +154,131 @@ The following table summarizes key data validation techniques available in Datab
 |**DLT Expectations**|Define data quality rules at the pipeline level with configurable actions (warn, drop, fail).|Highly Declarative: Part of pipeline definition, managed by DLT.|Pipeline Definition|`@dlt.expect("valid_quantity", "quantity > 0")`|
 |**PySpark `assertDataFrameEqual`/`assertSchemaEqual`**|Programmatic comparison of DataFrames and schemas for testing.|Programmatic (Functional): Used in unit/integration tests of pure functions.|Testing|`assertDataFrameEqual(actual_df, expected_df)`|
 
-## 5. Performance Optimization for Functional PySpark Workloads
+## 5. Logging and Error Reporting in PySpark Pipelines
+
+Effective logging is crucial for monitoring, debugging, and understanding the behavior of PySpark applications in Databricks, especially for identifying and resolving errors. Instead of relying on manual inspection of job runs, a scalable logging solution provides insights into application flow, common errors, and performance issues.22
+
+### 5.1 Implementing Logging with PySpark's Logger
+
+For production-grade PySpark applications, using proper logging frameworks is preferred over simple `print` statements, which can introduce performance overhead and lack structured handling.22
+
+PySpark's Structured Logger (Spark 4 / DBR 17.0+):
+
+As of Spark 4 (Databricks Runtime 17.0+), PySpark includes a simplified structured logger via the pyspark.logger module.22 This
+
+`PySparkLogger` class provides methods for logging messages at different levels (info, warning, error, exception) in a structured JSON format.23
+
+- **Setting Up:** Import `PySparkLogger` and create a logger instance:
+    
+    Python
+    
+    ```
+    from pyspark.logger import PySparkLogger
+    logger = PySparkLogger.getLogger() # Default name "PySparkLogger", INFO level [23]
+    ```
+    
+- **Logging Messages:** Use `logger.info()`, `logger.warning()`, `logger.error()`, or `logger.exception()` to log messages. You can include additional context as keyword arguments, which will be included in the JSON output.23
+    
+    - `logger.info("Data processing started for {file_name}", file_name="input.csv")` 23
+        
+    - `logger.error("Failed to process record {record_id} due to {error_msg}", record_id=123, error_msg="Invalid format")` 23
+        
+- **Customizing Output:** The logger can be configured to write logs to the console or a specified file. The default format is JSON, including timestamp, level, logger name, message, and context.23 To log to a file, you can add a
+    
+    `FileHandler` from Python's standard `logging` module.23
+    
+
+Standard Python logging Module:
+
+For older Databricks Runtimes or general Python code within PySpark applications, Python's built-in logging module is the standard approach.22
+
+- **Configuration:** Set up a logger with a name and logging level (e.g., `logging.getLogger('my_pipeline_logger').setLevel(logging.INFO)`).25
+    
+- **Handlers and Formatters:** Add `StreamHandler` to display logs in notebook output and define a `Formatter` for consistent message format (e.g., `%(asctime)s - %(name)s - %(levelname)s - %(message)s`).25
+    
+- **Avoiding Duplicates:** To prevent handlers from being added multiple times when re-running notebook cells, check `if not logger.hasHandlers():` before adding them.25
+    
+- **Logging Levels:** Configure logging levels appropriately to filter information based on severity 25:
+    
+    - `DEBUG`: Detailed information, typically for development.25
+        
+    - `INFO`: General operational messages, tracking key events.25
+        
+    - `WARNING`: Potential issues that don't immediately impact functionality.25
+        
+    - `ERROR`: Issues preventing a specific operation, but not stopping the entire application.25
+        
+    - `CRITICAL`: Severe issues that may crash the program, requiring immediate action.25
+        
+    - It's recommended to use `DEBUG` for development and `WARNING` or `ERROR` for production to keep logs concise.25
+        
+
+### 5.2 Structured Logging for Enhanced Analysis
+
+Using structured logging, particularly in JSON format, is a best practice as it simplifies parsing, searching, and analysis of logs.22 This is especially beneficial in Databricks for integration with analytics tools or for creating BI dashboards to monitor pipeline health.22
+
+- **Benefits of JSON Logging:** Machine-readable, easier to search and filter programmatically, and provides consistent output.25
+    
+- **Centralized Storage:** For scalable log management, logs should be stored in a centralized location. Unity Catalog volumes are recommended for this purpose, offering better data governance and access control compared to DBFS.22 Logs can be separated by environment (dev, stage, prod) for granular access control.22
+    
+
+### 5.3 Error Reporting and Debugging Clues
+
+When errors occur in PySpark, the logs provide crucial clues for debugging. Databricks errors typically include several components that help in programmatic handling and understanding the root cause 26:
+
+- **Error Condition:** A human-readable string unique to the error (e.g., `TABLE_OR_VIEW_NOT_FOUND`, `DIVIDE_BY_ZERO`).23
+    
+- **SQLSTATE:** A five-character string grouping error conditions into a standard format (e.g., `'42P01'`).26
+    
+- **Parameterized Message:** The error message with placeholders for parameters, allowing for dynamic rendering.26
+    
+- **Message Parameters:** A map of parameters and values providing additional context about the error (e.g., `'relationName' -> 'my_table'`).26
+    
+- **Full Message:** The completely rendered error message, including the error condition and SQLSTATE.26
+    
+
+Programmatic Error Handling:
+
+PySpark exceptions, such as PySparkException, can be caught using try-except blocks.24 Within the
+
+`except` block, you can access the `errorClass` (Error Condition), `getSqlState()`, and `getMessageParameters()` to programmatically respond to specific error types.26
+
+Python
+
+```
+from pyspark.errors import PySparkException
+import logging
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.ERROR) # Example logging setup [24]
+
+try:
+    # Your PySpark transformation logic here
+    spark.sql("SELECT * FROM non_existent_table").show()
+except PySparkException as ex:
+    logger.error(f"Spark Error Condition: {ex.getErrorClass()}") [27]
+    logger.error(f"SQLSTATE: {ex.getSqlState()}") [27]
+    logger.error(f"Message Parameters: {ex.getMessageParameters()}") [27]
+    logger.error(f"Full Error Message: {ex}") [27]
+    if ex.getSqlState() == "42P01": # Example: TABLE_OR_VIEW_NOT_FOUND SQLSTATE [26]
+        logger.error(f"Table not found: {ex.getMessageParameters().get('relationName')}") [26]
+    else:
+        raise # Re-raise if not specifically handled
+except Exception as e:
+    logger.error(f"An unexpected error occurred: {e}") [24]
+```
+
+Debugging Clues from Spark Logs:
+
+Spark logs (driver and executor logs) provide insights into job execution, task failures, and performance issues like garbage collection overhead or Spark spills.22 Python exceptions thrown from Python workers (e.g., from UDFs) will appear in the executor logs as
+
+`PythonException` with their stack traces.28 Spark configurations can simplify these stack traces to focus on Python-friendly exceptions.28 Monitoring these logs helps identify bottlenecks and debug issues efficiently.22
+
+## 6. Performance Optimization for Functional PySpark Workloads
 
 Optimizing PySpark job performance in Databricks is essential for cost-effectiveness and efficiency. This section details key strategies that complement and enhance functional programming patterns.
 
-### 5.1 Strategic Data Handling: Caching, Broadcast Joins, and Efficient Formats
+### 6.1 Strategic Data Handling: Caching, Broadcast Joins, and Efficient Formats
 
 Effective data handling is foundational to PySpark performance.
 
@@ -168,7 +288,7 @@ Effective data handling is foundational to PySpark performance.
 
 **Broadcast Joins:** When joining a large DataFrame with a significantly smaller one, broadcasting the smaller DataFrame to all worker nodes avoids a costly shuffle of the larger dataset.1 Spark's Adaptive Query Execution (AQE) can automatically convert sort-merge joins to broadcast hash joins if the table size is below a configurable threshold (default 30MB).4
 
-### 5.2 Minimizing Data Shuffling and Addressing Data Skew
+### 6.2 Minimizing Data Shuffling and Addressing Data Skew
 
 Data shuffling is one of the most expensive operations in Spark, involving data movement across the network between worker nodes. It occurs during "wide" transformations such as joins, aggregations, and window functions.1
 
@@ -184,7 +304,7 @@ _data layout_ and distribution for efficient processing.1 In a functional pipeli
 
 `spark.sql.shuffle.partitions` configuration (default 200) should be adjusted to an appropriate number based on data size and cluster capacity; AQE can often auto-tune this setting.1
 
-### 5.3 Advanced Cluster Configuration and Tuning
+### 6.3 Advanced Cluster Configuration and Tuning
 
 Beyond code-level optimizations, proper Databricks cluster configuration is critical for performance.
 
@@ -209,11 +329,11 @@ The following table lists critical Spark configurations for performance tuning:
 |`spark.sql.execution.arrow.pyspark.enabled`|Enables Apache Arrow for Pandas UDFs and `toPandas()` conversions.|Set to `true` for significant performance gains when using Pandas UDFs. 19|
 |`delta.targetFileSize`|Target size for Parquet files within Delta tables.|Aim for 128MB to 1GB to mitigate "tiny files problem." 4|
 
-## 6. Structuring PySpark Projects for Reusability and Maintainability
+## 7. Structuring PySpark Projects for Reusability and Maintainability
 
 Organizing PySpark code in Databricks to promote reusability, maintainability, and collaboration is crucial for scalable data engineering. This involves adopting a modular and functionally oriented architecture.
 
-### 6.1 Modular Design and Abstraction Layers for Functional Code
+### 7.1 Modular Design and Abstraction Layers for Functional Code
 
 **Project Structure:** PySpark projects should be organized into logical modules (Python `.py` files) within Databricks Repos.1 This allows for a clean separation of concerns, grouping related functions and logic into distinct files. Breaking down a complex data pipeline into smaller, self-contained modules and functions is a direct application of functional decomposition.1 Each module can encapsulate a specific set of related transformations, acting as a "black box" that takes inputs and produces outputs. This promotes reusability, as these modules can be imported and used across different pipelines.18 For instance, a
 
@@ -223,7 +343,7 @@ Organizing PySpark code in Databricks to promote reusability, maintainability, a
 
 **Idempotent Transformations:** Design transformation functions to be idempotent, meaning applying them multiple times with the same input produces the same result.20 This is crucial for fault tolerance and allows for safe re-runs of jobs. The recommendation for transformation functions to be idempotent implies that applying the function multiple times with the same input yields the same result. This is a crucial property for fault-tolerant distributed systems. If a Spark job fails and needs to be re-run, idempotent transformations ensure that re-processing the same data does not lead to inconsistent or incorrect results. This property is a direct consequence of embracing pure functions, which are inherently idempotent (as they have no side effects and their output depends only on their inputs). Idempotent transformations enable safe re-runs and easier recovery from failures, leading to more robust and reliable data pipelines. This significantly simplifies orchestration and error recovery in complex data ecosystems.
 
-### 6.2 Managing External Python Libraries and Dependencies
+### 7.2 Managing External Python Libraries and Dependencies
 
 Proper dependency management ensures that your code runs consistently across different environments and jobs.
 
